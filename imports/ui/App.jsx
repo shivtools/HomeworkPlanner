@@ -3,20 +3,36 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 import { Tasks } from '../api/tasks.js';
+import Modal from 'react-modal';
 
 import Task from './Task.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
 
+const customStyles = {
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)'
+  }
+};
 
 // App component - represents the whole app
 class App extends Component {
 
   constructor(props) {
+
     super(props);
  
     this.state = {
       hideCompleted: false,
+      modalIsOpen: false
     };
+
+    this.openModal = this.openModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
   }
 
   toggleHideCompleted() {
@@ -28,14 +44,37 @@ class App extends Component {
   handleSubmit(event) {
 
     event.preventDefault();
- 
     // Find the text field via the React ref
-    const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
- 
-    Meteor.call('tasks.insert', text);
+    Meteor.call('tasks.insert', taskObj);
  
     // Clear form
     ReactDOM.findDOMNode(this.refs.textInput).value = '';
+  }
+
+  submitTask(){
+ 
+    // Find the text field via the React ref
+    let taskObj = {
+      assignment: ReactDOM.findDOMNode(this.refs.assignment).value.trim(),
+      resources: ReactDOM.findDOMNode(this.refs.resources).value.trim(),
+      deadline: ReactDOM.findDOMNode(this.refs.deadline).value.trim(),
+      collaborators: ReactDOM.findDOMNode(this.refs.collaborators).value.trim(),
+      solutions: ReactDOM.findDOMNode(this.refs.solutions).value.trim()
+    }
+
+    Meteor.call('tasks.insert', taskObj);
+
+    //closeModal();
+ 
+  }
+
+  //Methods to handle close, after open and opening of the modal
+  openModal() {
+    this.setState({modalIsOpen: true});
+  }
+
+  closeModal() {
+    this.setState({modalIsOpen: false});
   }
   
   renderTasks() {
@@ -76,18 +115,51 @@ class App extends Component {
             Hide Completed Tasks
           </label>
 
-          <AccountsUIWrapper />
 
+          <button onClick={this.openModal}>Open Modal</button>
 
-          { this.props.currentUser ?
-            <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
+          <Modal
+            isOpen={this.state.modalIsOpen}
+            onRequestClose={this.closeModal}
+            style={customStyles}
+            contentLabel="Example Modal"
+          >
+
+            <h2>Add a task</h2>
+
+              <textarea
+                ref="assignment"
+                placeholder="Type to add assignment"
+              />
+
+              <textarea
+                ref="resources"
+                placeholder="Type to add resources"
+              />
+
+               <input
+                type="text"
+                ref="deadline"
+                placeholder="Type to add new deadline"
+              />
+
               <input
                 type="text"
-                ref="textInput"
-                placeholder="Type to add new tasks"
+                ref="collaborators"
+                placeholder="Type to add new collaborators"
               />
-            </form> : ''
-          }
+
+              <textarea
+                ref="solutions"
+                placeholder="Type to add solutions"
+              />
+
+            <button onClick={this.submitTask.bind(this)}>Submit</button>
+            <button onClick={this.closeModal}>Close</button>
+          </Modal>
+
+          <AccountsUIWrapper />
+
         </header>
 
         <ul>
