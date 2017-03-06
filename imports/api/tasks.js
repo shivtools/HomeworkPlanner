@@ -31,7 +31,8 @@ Meteor.methods({
     taskObj.createdAt = new Date();
     taskObj.owner = this.userId;
     taskObj.username = Meteor.users.findOne(this.userId).username;
- 
+    taskObj.checked = false;
+     
     Tasks.insert(taskObj);
   },
 

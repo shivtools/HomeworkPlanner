@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import ReactDOM from 'react-dom';
 import { Tasks } from '../api/tasks.js';
 import Modal from 'react-modal';
 
@@ -41,26 +40,15 @@ class App extends Component {
     });
   }
 
-  handleSubmit(event) {
-
-    event.preventDefault();
-    // Find the text field via the React ref
-    Meteor.call('tasks.insert', taskObj);
- 
-    // Clear form
-    ReactDOM.findDOMNode(this.refs.textInput).value = '';
-  }
-
   submitTask(){
- 
     // Find the text field via the React ref
     let taskObj = {
-      assignment: ReactDOM.findDOMNode(this.refs.assignment).value.trim(),
-      resources: ReactDOM.findDOMNode(this.refs.resources).value.trim(),
-      deadline: ReactDOM.findDOMNode(this.refs.deadline).value.trim(),
-      collaborators: ReactDOM.findDOMNode(this.refs.collaborators).value.trim(),
-      solutions: ReactDOM.findDOMNode(this.refs.solutions).value.trim()
-    }
+      assignment: this.assignment.value.trim(),
+      // resources: this.resources.value.trim(),
+      // deadline: this.deadline.value.trim(),
+      // collaborators: this.collaborators.value.trim(),
+      // solutions: this.solutions.value.trim()
+    };
 
     Meteor.call('tasks.insert', taskObj);
 
@@ -126,12 +114,12 @@ class App extends Component {
           >
 
             <h2>Add a task</h2>
-
               <textarea
-                ref="assignment"
+                ref={input => this.assignment = input}
                 placeholder="Type to add assignment"
               />
 
+              {/*
               <textarea
                 ref="resources"
                 placeholder="Type to add resources"
@@ -153,6 +141,7 @@ class App extends Component {
                 ref="solutions"
                 placeholder="Type to add solutions"
               />
+              */}
 
             <button onClick={this.submitTask.bind(this)}>Submit</button>
             <button onClick={this.closeModal}>Close</button>
