@@ -4,11 +4,10 @@ import Modal from 'react-modal';
 import { Tasks } from '../api/tasks.js';
 
 import Datetime from 'react-datetime';
-import moment from 'moment';
 
-require('react-datepicker/dist/react-datepicker.css');
+// styles 
+import 'react-datetime/css/react-datetime.css';
 
-//Style for the modal
 const customStyles = {
   content : {
     top                   : '50%',
@@ -16,7 +15,9 @@ const customStyles = {
     right                 : 'auto',
     bottom                : 'auto',
     marginRight           : '-50%',
-    transform             : 'translate(-50%, -50%)'
+    transform             : 'translate(-50%, -50%)',
+    width                 : '50%',
+    height                : '50%',
   }
 };
 
@@ -57,7 +58,7 @@ export default class TaskModal extends Component {
     };
 
     // console.log(this.assignment.value, this.resources.value, this.solutions.value); //works
-
+    // console.log(this.date.state.inputValue); // works
     Meteor.call('tasks.insert', taskObj);
 
     //closeModal();
@@ -89,6 +90,8 @@ export default class TaskModal extends Component {
               ref={input => this.solutions = input}
               placeholder="Type to add solutions"
             />
+
+            <Datetime ref={date => this.date = date}/>
 
             {/*
             <input
