@@ -1,22 +1,12 @@
 import React, { Component, PropTypes } from 'react';
+import ReactDOM from 'react-dom'
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Tasks } from '../api/tasks.js';
-import Modal from 'react-modal';
 
 import Task from './Task.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
-
-const customStyles = {
-  content : {
-    top                   : '50%',
-    left                  : '50%',
-    right                 : 'auto',
-    bottom                : 'auto',
-    marginRight           : '-50%',
-    transform             : 'translate(-50%, -50%)'
-  }
-};
+import TaskModal from './TaskModal.jsx'
 
 // App component - represents the whole app
 class App extends Component {
@@ -27,11 +17,13 @@ class App extends Component {
  
     this.state = {
       hideCompleted: false,
-      modalIsOpen: false
     };
+  }
 
-    this.openModal = this.openModal.bind(this);
-    this.closeModal = this.closeModal.bind(this);
+  handleChange(date) {
+    this.setState({
+      startDate: date
+    });
   }
 
   toggleHideCompleted() {
@@ -39,33 +31,9 @@ class App extends Component {
       hideCompleted: !this.state.hideCompleted,
     });
   }
-
-  submitTask(){
-    // Find the text field via the React ref
-    let taskObj = {
-      assignment: this.assignment.value.trim(),
-      // resources: this.resources.value.trim(),
-      // deadline: this.deadline.value.trim(),
-      // collaborators: this.collaborators.value.trim(),
-      // solutions: this.solutions.value.trim()
-    };
-
-    Meteor.call('tasks.insert', taskObj);
-
-    //closeModal();
- 
-  }
-
-  //Methods to handle close, after open and opening of the modal
-  openModal() {
-    this.setState({modalIsOpen: true});
-  }
-
-  closeModal() {
-    this.setState({modalIsOpen: false});
-  }
   
   renderTasks() {
+
     let filteredTasks = this.props.tasks;
 
     if (this.state.hideCompleted) {
@@ -84,6 +52,11 @@ class App extends Component {
         />
       );
     });
+
+  }
+
+  openAppModal(){
+    this._modal.openModal();
   }
 
   render() {
@@ -104,51 +77,11 @@ class App extends Component {
           </label>
 
 
-          <button onClick={this.openModal}>Open Modal</button>
+          <button onClick={this.openAppModal.bind(this)}>Open Modal</button>
 
-          <Modal
-            isOpen={this.state.modalIsOpen}
-            onRequestClose={this.closeModal}
-            style={customStyles}
-            contentLabel="Example Modal"
-          >
-
-            <h2>Add a task</h2>
-              <textarea
-                ref={input => this.assignment = input}
-                placeholder="Type to add assignment"
-              />
-
-              {/*
-              <textarea
-                ref="resources"
-                placeholder="Type to add resources"
-              />
-
-               <input
-                type="text"
-                ref="deadline"
-                placeholder="Type to add new deadline"
-              />
-
-              <input
-                type="text"
-                ref="collaborators"
-                placeholder="Type to add new collaborators"
-              />
-
-              <textarea
-                ref="solutions"
-                placeholder="Type to add solutions"
-              />
-              */}
-
-            <button onClick={this.submitTask.bind(this)}>Submit</button>
-            <button onClick={this.closeModal}>Close</button>
-          </Modal>
+          <TaskModal ref={(modal) => this._modal = modal}/>
 
           <AccountsUIWrapper />
-
         </header>
 
         <ul>
@@ -162,7 +95,7 @@ class App extends Component {
 App.propTypes = {
   tasks: PropTypes.array.isRequired,
   incompleteCount: PropTypes.number.isRequired,
-  currentUser: PropTypes.object
+  currentUser: PropTypes.object,
 };
 
 export default createContainer(() => {
