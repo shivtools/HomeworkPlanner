@@ -1,17 +1,18 @@
 import React, { Component, PropTypes } from 'react';
+import ReactDOM from 'react-dom'
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import ReactDOM from 'react-dom';
 import { Tasks } from '../api/tasks.js';
 
 import Task from './Task.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
-
+import TaskModal from './TaskModal.jsx'
 
 // App component - represents the whole app
 class App extends Component {
 
   constructor(props) {
+
     super(props);
  
     this.state = {
@@ -19,26 +20,20 @@ class App extends Component {
     };
   }
 
+  handleChange(date) {
+    this.setState({
+      startDate: date
+    });
+  }
+
   toggleHideCompleted() {
     this.setState({
       hideCompleted: !this.state.hideCompleted,
     });
   }
-
-  handleSubmit(event) {
-
-    event.preventDefault();
- 
-    // Find the text field via the React ref
-    const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
- 
-    Meteor.call('tasks.insert', text);
- 
-    // Clear form
-    ReactDOM.findDOMNode(this.refs.textInput).value = '';
-  }
   
   renderTasks() {
+
     let filteredTasks = this.props.tasks;
 
     if (this.state.hideCompleted) {
@@ -57,6 +52,11 @@ class App extends Component {
         />
       );
     });
+
+  }
+
+  openAppModal(){
+    this._modal.openModal();
   }
 
   render() {
@@ -76,18 +76,12 @@ class App extends Component {
             Hide Completed Tasks
           </label>
 
+
+          <button onClick={this.openAppModal.bind(this)}>Open Modal</button>
+
+          <TaskModal ref={(modal) => this._modal = modal}/>
+
           <AccountsUIWrapper />
-
-
-          { this.props.currentUser ?
-            <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
-              <input
-                type="text"
-                ref="textInput"
-                placeholder="Type to add new tasks"
-              />
-            </form> : ''
-          }
         </header>
 
         <ul>
@@ -101,7 +95,7 @@ class App extends Component {
 App.propTypes = {
   tasks: PropTypes.array.isRequired,
   incompleteCount: PropTypes.number.isRequired,
-  currentUser: PropTypes.object
+  currentUser: PropTypes.object,
 };
 
 export default createContainer(() => {
