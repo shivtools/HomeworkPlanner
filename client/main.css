@@ -110,6 +110,10 @@ header .hide-completed {
 .toggle-private {
   margin-left: 5px;
 }
+
+.glyphicon {
+  cursor: pointer;
+}
  
 @media (max-width: 600px) {
   li {

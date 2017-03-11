@@ -1,22 +1,65 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Tasks } from '../api/tasks.js';
 import classnames from 'classnames';
 
 // Task component - represents a single todo item
 export default class Task extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      subtasks: this.props.task.subtasks
+    };
+  }
 
   toggleChecked() {
     Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
   }
 
+  togglePrivate() {
+    Meteor.call('tasks.setPrivate', this.props.task._id, !this.props.task.private);
+  }
+
   deleteThisTask() {
     Meteor.call('tasks.remove', this.props.task._id);
   }
-  
-  togglePrivate() {
-    Meteor.call('tasks.setPrivate', this.props.task._id, ! this.props.task.private);
-  }	
 
+  addSubtask() {
+    let taskObj = {
+      parentTask: this.props.task._id,
+      assignment: 'subtask',
+      resources: '',
+      solutions: '',
+    };
+
+    Meteor.call('tasks.insert', taskObj, (error, result) => {
+      Meteor.call('tasks.addSubtask', this.props.task._id, result);
+      this.setState({subtasks: this.state.subtasks.concat([result])});
+    });
+  }
+
+  renderSubtasks() {
+    let subtasks = null;
+    if (this.state.subtasks.length > 0) {
+      // state
+      subtasks = Tasks.find({ _id: { $in: this.state.subtasks } }).fetch();
+    }
+    else {
+      // database
+      subtasks = Tasks.find({ _id: { $in: this.props.task.subtasks } }).fetch();
+    }
+
+    return subtasks.map((task) => {
+      return (
+        <Task
+          key={task._id}
+          task={task}
+          showPrivateButton={true}
+        />
+      );
+    });
+  }
 
   render() {
     // Give tasks a different className when they are checked off,
@@ -28,10 +71,6 @@ export default class Task extends Component {
 
     return (
       <li className={taskClassName}>
-        <button className="delete" onClick={this.deleteThisTask.bind(this)}>
-        &times;
-        </button>
-
         <input
           type="checkbox"
           readOnly
@@ -49,6 +88,21 @@ export default class Task extends Component {
         <span className="text">
           <strong>{this.props.task.username}</strong>: {this.props.task.assignment}
         </span>
+
+        <span className="pull-right">
+          <span 
+            className="glyphicon glyphicon-plus"
+            onClick={this.addSubtask.bind(this)}>
+          </span>&nbsp;&nbsp;
+          <span 
+            className="glyphicon glyphicon-remove" 
+            onClick={this.deleteThisTask.bind(this)}>
+          </span>
+        </span>
+
+        <ul>
+          { this.renderSubtasks() }
+        </ul>
       </li>
     );
   }
