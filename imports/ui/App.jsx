@@ -3,7 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Tasks } from '../api/tasks.js';
 
-import Task from './Task.jsx';
+import TaskContainer from './Task.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
 import TaskModal from './TaskModal.jsx';
 
@@ -11,9 +11,7 @@ import TaskModal from './TaskModal.jsx';
 class App extends Component {
 
   constructor(props) {
-
     super(props);
- 
     this.state = {
       hideCompleted: false,
     };
@@ -21,7 +19,7 @@ class App extends Component {
 
   handleChange(date) {
     this.setState({
-      startDate: date
+      startDate: date,
     });
   }
 
@@ -30,32 +28,30 @@ class App extends Component {
       hideCompleted: !this.state.hideCompleted,
     });
   }
-  
-  renderTasks() {
 
+  openAppModal() {
+    this._modal.openModal();
+  }
+
+  renderTasks() {
     let filteredTasks = this.props.tasks;
 
     if (this.state.hideCompleted) {
       filteredTasks = filteredTasks.filter(task => !task.checked);
     }
-    
+
     return filteredTasks.map((task) => {
       const currentUserId = this.props.currentUser && this.props.currentUser._id;
       const showPrivateButton = task.owner === currentUserId;
- 
+
       return (
-        <Task
+        <TaskContainer
           key={task._id}
           task={task}
           showPrivateButton={showPrivateButton}
         />
       );
     });
-
-  }
-
-  openAppModal(){
-    this._modal.openModal();
   }
 
   render() {

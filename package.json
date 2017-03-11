@@ -14,5 +14,51 @@
     "react-datetime": "^2.8.8",
     "react-dom": "^15.4.2",
     "react-modal": "^1.7.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "eslint": "^3.5.0",
+    "eslint-config-airbnb": "^11.1.0",
+    "eslint-import-resolver-meteor": "^0.3.3",
+    "eslint-plugin-import": "^1.15.0",
+    "eslint-plugin-jsx-a11y": "^2.2.2",
+    "eslint-plugin-meteor": "^4.0.0",
+    "eslint-plugin-react": "^6.2.1"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "parserOptions": {
+      "allowImportExportEverywhere": true
+    },
+    "plugins": [
+      "meteor"
+    ],
+    "extends": [
+      "airbnb",
+      "plugin:meteor/recommended"
+    ],
+    "settings": {
+      "import/resolver": "meteor"
+    },
+    "rules": {
+      "react/jsx-filename-extension": [
+        1,
+        {
+          "extensions": [
+            ".js",
+            ".jsx"
+          ]
+        }
+      ],
+      "no-underscore-dangle": [
+        "error",
+        {
+          "allow": [
+            "_id"
+          ]
+        }
+      ],
+      "import/no-extraneous-dependencies": 0
+    }
   }
 }

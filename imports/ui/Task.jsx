@@ -1,15 +1,17 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
-import { Tasks } from '../api/tasks.js';
+import { createContainer } from 'meteor/react-meteor-data';
 import classnames from 'classnames';
 
+import { Tasks } from '../api/tasks.js';
+
 // Task component - represents a single todo item
-export default class Task extends Component {
+class Task extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      subtasks: this.props.task.subtasks
+      subtasks: this.props.task.subtasks,
     };
   }
 
@@ -26,7 +28,7 @@ export default class Task extends Component {
   }
 
   addSubtask() {
-    let taskObj = {
+    const taskObj = {
       parentTask: this.props.task._id,
       assignment: 'subtask',
       resources: '',
@@ -35,27 +37,19 @@ export default class Task extends Component {
 
     Meteor.call('tasks.insert', taskObj, (error, result) => {
       Meteor.call('tasks.addSubtask', this.props.task._id, result);
-      this.setState({subtasks: this.state.subtasks.concat([result])});
+      this.setState({ subtasks: this.state.subtasks.concat([result]) });
     });
   }
 
   renderSubtasks() {
-    let subtasks = null;
-    if (this.state.subtasks.length > 0) {
-      // state
-      subtasks = Tasks.find({ _id: { $in: this.state.subtasks } }).fetch();
-    }
-    else {
-      // database
-      subtasks = Tasks.find({ _id: { $in: this.props.task.subtasks } }).fetch();
-    }
-
-    return subtasks.map((task) => {
+    const showPrivateButton = true;
+    
+    return this.props.subtasks.map((task) => {
       return (
-        <Task
+        <TaskContainer
           key={task._id}
           task={task}
-          showPrivateButton={true}
+          showPrivateButton={showPrivateButton}
         />
       );
     });
@@ -80,7 +74,7 @@ export default class Task extends Component {
 
         { this.props.showPrivateButton ? (
           <button className="toggle-private" onClick={this.togglePrivate.bind(this)}>
-          { this.props.task.private ? 'Private' : 'Public' }
+            { this.props.task.private ? 'Private' : 'Public' }
           </button>
           ) : ''
         }
@@ -92,7 +86,7 @@ export default class Task extends Component {
         <span className="pull-right">
           <span 
             className="glyphicon glyphicon-plus"
-            onClick={this.addSubtask.bind(this)}>
+            onClick={this.addSubtask.bind(this)} >
           </span>&nbsp;&nbsp;
           <span 
             className="glyphicon glyphicon-remove" 
@@ -113,4 +107,14 @@ Task.propTypes = {
   // We can use propTypes to indicate it is required
   task: PropTypes.object.isRequired,
   showPrivateButton: React.PropTypes.bool.isRequired,
+  subtasks: PropTypes.array,
 };
+
+
+export default TaskContainer = createContainer(({ task }) => {
+  Meteor.subscribe('tasks');
+
+  return {
+    subtasks: Tasks.find({ _id: { $in: task.subtasks } }).fetch(),
+  };
+}, Task);
