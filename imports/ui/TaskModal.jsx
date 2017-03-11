@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { Meteor } from 'meteor/meteor'
+import { Meteor } from 'meteor/meteor';
 import Modal from 'react-modal';
 import { Tasks } from '../api/tasks.js';
 

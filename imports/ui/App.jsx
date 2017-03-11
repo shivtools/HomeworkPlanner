@@ -1,12 +1,11 @@
 import React, { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom'
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Tasks } from '../api/tasks.js';
 
 import Task from './Task.jsx';
 import AccountsUIWrapper from './AccountsUIWrapper.jsx';
-import TaskModal from './TaskModal.jsx'
+import TaskModal from './TaskModal.jsx';
 
 // App component - represents the whole app
 class App extends Component {
@@ -103,7 +102,7 @@ export default createContainer(() => {
   Meteor.subscribe('tasks');
 
   return {
-    tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
+    tasks: Tasks.find({ parentTask: { $exists: false } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
     currentUser: Meteor.user()
   };

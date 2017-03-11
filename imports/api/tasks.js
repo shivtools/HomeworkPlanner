@@ -32,8 +32,9 @@ Meteor.methods({
     taskObj.owner = this.userId;
     taskObj.username = Meteor.users.findOne(this.userId).username;
     taskObj.checked = false;
+    taskObj.subtasks = new Array();
      
-    Tasks.insert(taskObj);
+    return Tasks.insert(taskObj);
   },
 
   'tasks.remove'(taskId) {
@@ -73,5 +74,11 @@ Meteor.methods({
     }
  
     Tasks.update(taskId, { $set: { private: setToPrivate } });
+  },
+
+  'tasks.addSubtask'(taskId, subtaskId) {
+    check(subtaskId, String);
+
+    Tasks.update(taskId, { $push: { subtasks: subtaskId } });
   },
 });
