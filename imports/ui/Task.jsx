@@ -1,16 +1,24 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Tasks } from '../api/tasks.js';
 import classnames from 'classnames';
 
 // Task component - represents a single todo item
 export default class Task extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      subtasks: this.props.task.subtasks
+    };
+  }
 
   toggleChecked() {
     Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
   }
 
   togglePrivate() {
-    Meteor.call('tasks.setPrivate', this.props.task._id, ! this.props.task.private);
+    Meteor.call('tasks.setPrivate', this.props.task._id, !this.props.task.private);
   }
 
   deleteThisTask() {
@@ -25,13 +33,33 @@ export default class Task extends Component {
       solutions: '',
     };
 
-    Meteor.call('tasks.insert', taskObj, ((thisTaskId) => {
-      return (error, result) => {
-        Meteor.call('tasks.addSubtask', thisTaskId, result);
-      };
-    })(this.props.task._id));
+    Meteor.call('tasks.insert', taskObj, (error, result) => {
+      Meteor.call('tasks.addSubtask', this.props.task._id, result);
+      this.setState({subtasks: this.state.subtasks.concat([result])});
+    });
   }
 
+  renderSubtasks() {
+    let subtasks = null;
+    if (this.state.subtasks.length > 0) {
+      // state
+      subtasks = Tasks.find({ _id: { $in: this.state.subtasks } }).fetch();
+    }
+    else {
+      // database
+      subtasks = Tasks.find({ _id: { $in: this.props.task.subtasks } }).fetch();
+    }
+
+    return subtasks.map((task) => {
+      return (
+        <Task
+          key={task._id}
+          task={task}
+          showPrivateButton={true}
+        />
+      );
+    });
+  }
 
   render() {
     // Give tasks a different className when they are checked off,
@@ -71,6 +99,10 @@ export default class Task extends Component {
             onClick={this.deleteThisTask.bind(this)}>
           </span>
         </span>
+
+        <ul>
+          { this.renderSubtasks() }
+        </ul>
       </li>
     );
   }
