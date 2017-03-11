@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
@@ -20,11 +21,10 @@ if (Meteor.isServer) {
 Meteor.methods({
 
   'tasks.insert'(taskObj) {
-
     check(taskObj, Object);
  
     // Make sure the user is logged in before inserting a task
-    if (! this.userId) {
+    if (!this.userId) {
       throw new Meteor.Error('not-authorized');
     }
 
@@ -32,13 +32,12 @@ Meteor.methods({
     taskObj.owner = this.userId;
     taskObj.username = Meteor.users.findOne(this.userId).username;
     taskObj.checked = false;
-    taskObj.subtasks = new Array();
+    taskObj.subtasks = [];
      
     return Tasks.insert(taskObj);
   },
 
   'tasks.remove'(taskId) {
-
     check(taskId, String);
     const task = Tasks.findOne(taskId);
     if (task.private && task.owner !== this.userId) {
@@ -77,6 +76,7 @@ Meteor.methods({
   },
 
   'tasks.addSubtask'(taskId, subtaskId) {
+    check(taskId, String);
     check(subtaskId, String);
 
     Tasks.update(taskId, { $push: { subtasks: subtaskId } });

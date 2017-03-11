@@ -10,9 +10,10 @@ class Task extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      subtasks: this.props.task.subtasks,
-    };
+    this.toggleChecked = this.toggleChecked.bind(this);
+    this.togglePrivate = this.togglePrivate.bind(this);
+    this.addSubtask = this.addSubtask.bind(this);
+    this.deleteThisTask = this.deleteThisTask.bind(this);
   }
 
   toggleChecked() {
@@ -37,14 +38,13 @@ class Task extends Component {
 
     Meteor.call('tasks.insert', taskObj, (error, result) => {
       Meteor.call('tasks.addSubtask', this.props.task._id, result);
-      this.setState({ subtasks: this.state.subtasks.concat([result]) });
     });
   }
 
   renderSubtasks() {
-    const showPrivateButton = true;
-    
     return this.props.subtasks.map((task) => {
+      const showPrivateButton = true;
+      
       return (
         <TaskContainer
           key={task._id}
@@ -69,11 +69,11 @@ class Task extends Component {
           type="checkbox"
           readOnly
           checked={this.props.task.checked}
-          onClick={this.toggleChecked.bind(this)}
+          onClick={this.toggleChecked}
         />
 
         { this.props.showPrivateButton ? (
-          <button className="toggle-private" onClick={this.togglePrivate.bind(this)}>
+          <button className="toggle-private" onClick={this.togglePrivate}>
             { this.props.task.private ? 'Private' : 'Public' }
           </button>
           ) : ''
@@ -84,14 +84,13 @@ class Task extends Component {
         </span>
 
         <span className="pull-right">
-          <span 
-            className="glyphicon glyphicon-plus"
-            onClick={this.addSubtask.bind(this)} >
-          </span>&nbsp;&nbsp;
-          <span 
-            className="glyphicon glyphicon-remove" 
-            onClick={this.deleteThisTask.bind(this)}>
-          </span>
+          <button type="button" className="btn btn-default btn-sm" onClick={this.addSubtask}>
+            <span className="glyphicon glyphicon-plus" />
+          </button>
+          &nbsp;&nbsp;
+          <button type="button" className="btn btn-default btn-sm" onClick={this.deleteThisTask}>
+            <span className="glyphicon glyphicon-remove" />
+          </button>
         </span>
 
         <ul>
@@ -107,14 +106,16 @@ Task.propTypes = {
   // We can use propTypes to indicate it is required
   task: PropTypes.object.isRequired,
   showPrivateButton: React.PropTypes.bool.isRequired,
-  subtasks: PropTypes.array,
+  subtasks: PropTypes.arrayOf(PropTypes.object),
 };
 
 
-export default TaskContainer = createContainer(({ task }) => {
+const TaskContainer = createContainer(({ task }) => {
   Meteor.subscribe('tasks');
 
   return {
     subtasks: Tasks.find({ _id: { $in: task.subtasks } }).fetch(),
   };
 }, Task);
+
+export default TaskContainer;

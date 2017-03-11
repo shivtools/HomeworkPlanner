@@ -15,6 +15,9 @@ class App extends Component {
     this.state = {
       hideCompleted: false,
     };
+
+    this.toggleHideCompleted = this.toggleHideCompleted.bind(this);
+    this.openAppModal = this.openAppModal.bind(this);
   }
 
   handleChange(date) {
@@ -30,7 +33,7 @@ class App extends Component {
   }
 
   openAppModal() {
-    this._modal.openModal();
+    this.modal.openModal();
   }
 
   renderTasks() {
@@ -66,15 +69,15 @@ class App extends Component {
               type="checkbox"
               readOnly
               checked={this.state.hideCompleted}
-              onClick={this.toggleHideCompleted.bind(this)}
+              onClick={this.toggleHideCompleted}
             />
             Hide Completed Tasks
           </label>
 
 
-          <button onClick={this.openAppModal.bind(this)}>Open Modal</button>
+          <button onClick={this.openAppModal}>Open Modal</button>
 
-          <TaskModal ref={(modal) => this._modal = modal}/>
+          <TaskModal ref={(modal) => { this.modal = modal; }} />
 
           <AccountsUIWrapper />
         </header>
@@ -88,18 +91,17 @@ class App extends Component {
 }
 
 App.propTypes = {
-  tasks: PropTypes.array.isRequired,
+  tasks: PropTypes.arrayOf(PropTypes.object).isRequired,
   incompleteCount: PropTypes.number.isRequired,
   currentUser: PropTypes.object,
 };
 
 export default createContainer(() => {
-
   Meteor.subscribe('tasks');
 
   return {
     tasks: Tasks.find({ parentTask: { $exists: false } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
-    currentUser: Meteor.user()
+    currentUser: Meteor.user(),
   };
 }, App);
