@@ -3,10 +3,12 @@ import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 import classnames from 'classnames';
 
+import TaskModal from './TaskModal.jsx';
 import { Tasks } from '../api/tasks.js';
 
 // Task component - represents a single todo item
 class Task extends Component {
+
   constructor(props) {
     super(props);
 
@@ -14,10 +16,15 @@ class Task extends Component {
     this.togglePrivate = this.togglePrivate.bind(this);
     this.addSubtask = this.addSubtask.bind(this);
     this.deleteThisTask = this.deleteThisTask.bind(this);
+    this.openSubTaskModal = this.openSubTaskModal.bind(this);
   }
 
   toggleChecked() {
     Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
+  }
+
+  openSubTaskModal() {
+    this.modal.openModal();
   }
 
   togglePrivate() {
@@ -25,20 +32,39 @@ class Task extends Component {
   }
 
   deleteThisTask() {
-    Meteor.call('tasks.remove', this.props.task._id);
+
+    this.deleteTaskByID(this.props.task._id);
+
+  }
+
+  //sexy recursive function
+  deleteTaskByID(taskID){
+    /*
+        Find all subtasks:
+          - if no subtasks, return
+          - get all subtask IDs
+            - delete the parent task 
+            - call function recursively on each subtaskID
+    */
+
+    //Find task associated with taskID from database
+    let dbTask = Tasks.find({ _id: taskID }).fetch();
+
+    //Find subtasks associated with this task
+    let subtaskIDs = dbTask.subtasks;
+
+    //Only if subtasks exist, then call the recurisve function on each subtask ID
+    if(subtaskIDs && subtaskIDs.length != 0){
+      subtaskIDs.forEach((subTaskID) => { deleteTaskByID(subtaskID) } );
+      console.log(subTaskIDs);
+    }
+
+    //Delete the current (parent) task from database
+    Meteor.call('tasks.remove', taskID);
   }
 
   addSubtask() {
-    const taskObj = {
-      parentTask: this.props.task._id,
-      assignment: 'subtask',
-      resources: '',
-      solutions: '',
-    };
-
-    Meteor.call('tasks.insert', taskObj, (error, result) => {
-      Meteor.call('tasks.addSubtask', this.props.task._id, result);
-    });
+    this.openSubTaskModal();
   }
 
   renderSubtasks() {
@@ -92,6 +118,8 @@ class Task extends Component {
             <span className="glyphicon glyphicon-remove" />
           </button>
         </span>
+
+        <TaskModal parentTask={this.props.task._id} ref={(modal) => { this.modal = modal; }} />
 
         <ul>
           { this.renderSubtasks() }

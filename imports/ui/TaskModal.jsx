@@ -23,6 +23,7 @@ const customStyles = {
 export default class TaskModal extends Component {
 
   constructor(props) {
+
     super(props);
  
     this.state = {
@@ -44,21 +45,29 @@ export default class TaskModal extends Component {
   }
 
   submitTask() {
+
     // Find the text field via the React ref
     const taskObj = {
+      parentTask: this.props.parentTask,
       assignment: this.assignment.value.trim(),
       resources: this.resources.value.trim(),
       solutions: this.solutions.value.trim(),
-
       // deadline: this.deadline.value.trim(),
       // collaborators: this.collaborators.value.trim(),
     };
 
-    // console.log(this.assignment.value, this.resources.value, this.solutions.value); //works
-    // console.log(this.date.state.inputValue); // works
-    Meteor.call('tasks.insert', taskObj);
 
-    // closeModal();
+    //If a parent task ID does not exist (meaning this is the top most parent task in the chain), then simply add the task object to the DB
+    if(!this.props.parentTask){
+      Meteor.call('tasks.insert', taskObj);
+    }
+    //Else, there is a parent task associated with this task, so add this task as a subtask of parent task
+    else{
+      Meteor.call('tasks.insert', taskObj, (error, result) => {
+        Meteor.call('tasks.addSubtask', this.props.parentTask, result);
+      });
+    }
+
   }
 
   render() {
@@ -103,4 +112,8 @@ export default class TaskModal extends Component {
       </Modal>);
   }
   
+}
+
+TaskModal.propTypes = {
+  parentTask: React.PropTypes.string
 }
