@@ -14,16 +14,15 @@ class Task extends Component {
 
     this.toggleChecked = this.toggleChecked.bind(this);
     this.togglePrivate = this.togglePrivate.bind(this);
-    this.addSubtask = this.addSubtask.bind(this);
     this.deleteThisTask = this.deleteThisTask.bind(this);
-    this.openSubTaskModal = this.openSubTaskModal.bind(this);
+    this.addSubtask = this.addSubtask.bind(this);
   }
 
   toggleChecked() {
     Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
   }
 
-  openSubTaskModal() {
+  addSubtask() {
     this.modal.openModal();
   }
 
@@ -32,39 +31,32 @@ class Task extends Component {
   }
 
   deleteThisTask() {
-
     this.deleteTaskByID(this.props.task._id);
-
   }
 
-  //sexy recursive function
-  deleteTaskByID(taskID){
+  // sexy recursive function
+  deleteTaskByID(taskID) {
     /*
         Find all subtasks:
           - if no subtasks, return
           - get all subtask IDs
-            - delete the parent task 
+            - delete the parent task
             - call function recursively on each subtaskID
     */
 
-    //Find task associated with taskID from database
-    let dbTask = Tasks.find({ _id: taskID }).fetch();
+    // Find task associated with taskID from database
+    const dbTask = Tasks.findOne(taskID);
 
-    //Find subtasks associated with this task
-    let subtaskIDs = dbTask.subtasks;
+    // Find subtasks associated with this task
+    const subtaskIDs = dbTask.subtasks;
 
-    //Only if subtasks exist, then call the recurisve function on each subtask ID
-    if(subtaskIDs && subtaskIDs.length != 0){
-      subtaskIDs.forEach((subTaskID) => { deleteTaskByID(subtaskID) } );
-      console.log(subTaskIDs);
+    // Only if subtasks exist, then call the recurisve function on each subtask ID
+    if (subtaskIDs && subtaskIDs.length !== 0) {
+      subtaskIDs.forEach((subtaskID) => { this.deleteTaskByID(subtaskID); });
     }
 
-    //Delete the current (parent) task from database
+    // Delete the current (parent) task from database
     Meteor.call('tasks.remove', taskID);
-  }
-
-  addSubtask() {
-    this.openSubTaskModal();
   }
 
   renderSubtasks() {

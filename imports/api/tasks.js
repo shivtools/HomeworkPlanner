@@ -38,7 +38,6 @@ Meteor.methods({
   },
 
   'tasks.remove'(taskId) {
-
     check(taskId, String);
     const task = Tasks.findOne(taskId);
     if (task.private && task.owner !== this.userId) {
@@ -46,10 +45,10 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized');
     }
 
-    //Remove reference of this task (from subtasks array of IDs) from its parent task 
-    if(task.parentTask){
-      Tasks.update(task.parentTask, { $pull: { subtasks: taskId} });
-    } 
+    // Remove reference of this task (from subtasks array of IDs) from its parent task
+    if (task.parentTask) {
+      Tasks.update(task.parentTask, { $pull: { subtasks: taskId } });
+    }
 
     Tasks.remove(taskId);
   },
@@ -82,7 +81,6 @@ Meteor.methods({
   },
 
   'tasks.addSubtask'(taskId, subtaskId) {
-
     check(taskId, String);
     check(subtaskId, String);
 

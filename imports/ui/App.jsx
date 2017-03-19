@@ -37,7 +37,6 @@ class App extends Component {
   }
 
   renderTasks() {
-
     let filteredTasks = this.props.tasks;
 
     if (this.state.hideCompleted) {
@@ -45,7 +44,6 @@ class App extends Component {
     }
 
     return filteredTasks.map((task) => {
-
       const currentUserId = this.props.currentUser && this.props.currentUser._id;
       const showPrivateButton = task.owner === currentUserId;
 
@@ -102,9 +100,8 @@ export default createContainer(() => {
   Meteor.subscribe('tasks');
 
   return {
-    
-    //Find all the most high level tasks
-    tasks: Tasks.find({ parentTask: { $exists: false } }).fetch(),   
+    // Find all the most high level tasks
+    tasks: Tasks.find({ parentTask: { $exists: false } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
     currentUser: Meteor.user(),
   };
