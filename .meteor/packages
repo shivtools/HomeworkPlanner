@@ -23,3 +23,5 @@ accounts-ui@1.1.9
 accounts-password@1.3.4
 practicalmeteor:mocha
 twbs:bootstrap
+email
+percolate:synced-cron

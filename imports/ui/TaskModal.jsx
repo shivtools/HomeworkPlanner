@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import Modal from 'react-modal';
-
+import Dropdown from 'react-dropdown'
 import Datetime from 'react-datetime';
 
 // styles
@@ -32,6 +32,23 @@ export default class TaskModal extends Component {
     this.openModal = this.openModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.submitTask = this.submitTask.bind(this);
+    this.changeDigit = this.changeDigit.bind(this);
+    this.changePeriod = this.changePeriod.bind(this);
+
+    this.digit = '';
+    this.period = '';
+
+    this.dateOptions = (Array.from(Array(30).keys())).map((date) => (date).toString()); //Create an array from 1 to 30 and convert each entry to a string
+    this.timePeriodOptions = ['Hours','Days', 'Weeks', 'Months'];
+  }
+
+  //Functions to update value of digit and period after dropdowns are changed
+  changeDigit(val){
+    this.digit = val;
+  }
+
+  changePeriod(val){
+    this.period = val;
   }
   
   // Methods to handle close, after open and opening of the modal
@@ -44,15 +61,24 @@ export default class TaskModal extends Component {
   }
 
   submitTask() {
+
+    const deadline = this.date.state.inputValue.trim().split(" ");
+
+    console.log(deadline);
+    
     // Find the text field via the React ref
     const taskObj = {
       parentTask: this.props.parentTask,
       assignment: this.assignment.value.trim(),
       resources: this.resources.value.trim(),
       solutions: this.solutions.value.trim(),
-      // deadline: this.deadline.value.trim(),
+      deadline: deadline[0] + "T" + deadline[1] + "Z",
+      reminderVal: this.digit.value,        //1,2,3...,30
+      reminderPeriod: this.period.value,    //Hours, Days, Months, Weeks
       // collaborators: this.collaborators.value.trim(),
     };
+
+    //console.log(taskObj);
 
 
     // If a parent task ID does not exist (meaning this is the top most parent task in the chain),
@@ -95,7 +121,10 @@ export default class TaskModal extends Component {
           placeholder="Type to add solutions"
         />
 
-        <Datetime ref={(date) => { this.date = date; }} />
+        <Datetime dateFormat="YYYY-MM-DD" timeFormat="HH:mm:ss" ref={(date) => { this.date = date; }} />
+
+        <Dropdown onChange={this.changeDigit} options={this.dateOptions} value={this.dateOptions[0]} placeholder="Reminder" />
+        <Dropdown onChange={this.changePeriod} options={this.timePeriodOptions} value={this.timePeriodOptions[0]} placeholder="Select a time period" />
 
         {/*
         <input
@@ -107,6 +136,7 @@ export default class TaskModal extends Component {
 
         <button onClick={this.submitTask}>Submit</button>
         <button onClick={this.closeModal}>Close</button>
+
       </Modal>);
   }
   

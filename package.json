@@ -13,6 +13,7 @@
     "react-addons-pure-render-mixin": "^15.4.2",
     "react-datetime": "^2.8.8",
     "react-dom": "^15.4.2",
+    "react-dropdown": "^1.2.1",
     "react-modal": "^1.7.1"
   },
   "devDependencies": {

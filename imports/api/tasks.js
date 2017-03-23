@@ -2,8 +2,11 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import { Email } from 'meteor/email'
  
 export const Tasks = new Mongo.Collection('tasks');
+
+SyncedCron.start();
 
 if (Meteor.isServer) {
   // This code only runs on the server
@@ -20,7 +23,23 @@ if (Meteor.isServer) {
 
 Meteor.methods({
 
+  sendEmail: function (to, from, subject, text) {
+
+    check([to, from, subject, text], [String]);
+    // Let other method calls from the same client start running,
+    // without waiting for the email sending to complete.
+    this.unblock();
+
+    Email.send({
+      to: to,
+      from: from,
+      subject: subject,
+      text: text
+    });
+  },
+
   'tasks.insert'(taskObj) {
+    
     check(taskObj, Object);
  
     // Make sure the user is logged in before inserting a task
