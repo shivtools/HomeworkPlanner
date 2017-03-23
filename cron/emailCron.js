@@ -44,65 +44,51 @@ function emailCronjob(){
 	//Get all tasks from database
 	let tasks = Tasks.find({}).fetch();
 
+	//Go through each task and send an email reminder to the user as needed
+	tasks.filter((task) => { 
+
+		//If the user must be reminded to complete a task, send them an email.
+		if(isReminderDue(task)){
+			sendEmail(task);
+		}
+	});
+}
+
+/*
+	Given task calculate the number of hours prior to deadline that user would like to be 
+	sent a reminder.
+
+	Returns true if the user must be sent a reminder email. False otherwise.
+	
+	@params: task object
+*/
+function isReminderDue(task){
+
+	let reminderHours = findHours(task);
+
 	//Get the time right now (used to calculate difference later)
 	const now = new Date();
 
 	//Number of milliseconds in 1 hour
 	let msInOneHour = 1000 * 60 * 60; 
 
-	//Go through each task and send an email reminder to the user as needed
-	tasks.filter((task) => { 
+	//Note: Month is stored from 0-11 not 1-12
+	let deadline = new Date(task.deadline);
 
-		//Note: Month is stored from 0-11 not 1-12
-		let deadline = new Date(task.deadline);
-		
-		//Get hours prior to deadline the user wants to be reminded
-		let reminderHours = getHours(task);
+	//Get difference between deadline and time right now
+	let diff = (deadline.getTime() - now.getTime()) / msInOneHour;
 
-		//Get difference between deadline and time right now
-		let diff = (deadline.getTime() - now.getTime()) / msInOneHour;
-
-		//If the difference is less than the remainderPeriod calculated, then alert user
-		if(diff < reminderHours){
-			sendEmail(task, deadline);
-		}
-	});
+	return (diff < reminderHours) ? true : false;
 }
 
 /*
-	Given a task and its deadline, send user associated with the task an email
+	Given task calculate the number of hours prior to deadline that user would like to be 
+	sent a reminder.
 
-	@params:
-		task: Task object containing fields such as owner, deadline etc.
-		deadline: Date object for deadline
+	@params: task object
 */
-function sendEmail(task, deadline){
 
-	let ownerID = task.owner;
-
-	let user = Meteor.users.findOne({ _id : ownerID });
-
-	let subject = 'Assignment due soon!';
-
-	//Make this sexy
-	let body = task.assignment + ' is due at: ' + deadline.getDate()
-			  				   + '/' + deadline.getMonth()
-			  				   + '/' + deadline.getFullYear();
-
-	//Format: Meteor.call(to, from, subject, text)
-	//TODO: Put in email field for each user
-	Meteor.call('sendEmail', 'homeworkplanner@gmail.com', 'todo@todo.com', subject, body);
-}
-
-/*
-	Given a value and a period, calculate the number of hours prior to deadline that user would like to be 
-	sent a reminder
-	
-	@params:
-		reminderVal: {Integer} ranges from 0-29
-		reminderPeriod: {String} "Hours", "Days", "Weeks", "Months" 
-*/
-function getHours(task){
+function findHours(task){
 
 	//User provided fields for each task 	
 	let reminderVal = task.reminderVal;			//1,2,3....30
@@ -129,3 +115,32 @@ function getHours(task){
 
 	return reminderHours;
 }
+
+/*
+	Given a task and its deadline, send user associated with the task an email
+
+	@params:
+		task: Task object containing fields such as owner, deadline etc.
+		deadline: Date object for deadline
+*/
+function sendEmail(task){
+
+	let ownerID = task.owner;
+
+	let deadline = new Date(task.deadline);
+
+	let user = Meteor.users.findOne({ _id : ownerID });
+
+	let subject = 'Assignment due soon!';
+
+	//Make this sexy
+	let body = task.assignment + ' is due at: ' + deadline.getDate()
+			  				   + '/' + deadline.getMonth()
+			  				   + '/' + deadline.getFullYear();
+
+	//Format: Meteor.call(to, from, subject, text)
+	//TODO: Put in email field for each user
+	Meteor.call('sendEmail', 'homeworkplanner@gmail.com', 'todo@todo.com', subject, body);
+}
+
+
